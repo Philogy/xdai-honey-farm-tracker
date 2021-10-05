@@ -37,7 +37,7 @@ async function main() {
   const rawPoolInfo = await multicall(poolList.map((pool) => farmCallEncoder('poolInfo', pool)))
   const poolInfo = Object.fromEntries(_.zip(poolList, rawPoolInfo))
   console.log('account: ', account)
-  console.log(`owns ${s(depositCount, 'deposit')} deposits across ${s(pools.size, 'pool')}`)
+  console.log(`owns ${s(depositCount, 'deposit')} across ${s(pools.size, 'pool')}`)
 
   const totalHsf = pendingComb.reduce((sum, pending) => sum.add(pending), ethers.constants.Zero)
   console.log(`total pending xCOMB: ${ethers.utils.formatUnits(totalHsf)}`)
