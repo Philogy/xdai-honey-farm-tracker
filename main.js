@@ -42,6 +42,8 @@ async function main() {
   const totalHsf = pendingComb.reduce((sum, pending) => sum.add(pending), ethers.constants.Zero)
   console.log(`total pending xCOMB: ${ethers.utils.formatUnits(totalHsf)}`)
 
+  console.log('\nPool breakdown (Pool share, daily earnings):')
+  let totalPoolRewards = ethers.constants.Zero
   pools.forEach((pool) => {
     const poolDeposits = deposits.filter((deposit) => deposit.pool === pool)
     const userShares = poolDeposits.reduce(
@@ -57,12 +59,17 @@ async function main() {
       .div(totalAlloc)
       .div(poolShares)
       .div(ethers.constants.WeiPerEther)
+    totalPoolRewards = totalPoolRewards.add(poolRewards)
     console.log(
       `${pool}: ${poolShare.toNumber() / precision}% (xCOMB / day = ${ethers.utils.formatUnits(
         poolRewards
       )})`
     )
   })
+
+  console.log(
+    `\nTotal daily yield (next 24h): ${ethers.utils.formatUnits(totalPoolRewards)} xCOMB / day`
+  )
 }
 
 main()
