@@ -9,7 +9,7 @@ const s = (value, str) => (value === 1 ? `${value} ${str}` : `${value} ${str}s`)
 async function main() {
   const provider = new ethers.providers.JsonRpcProvider('https://dai.poa.network')
   const multicall = getMulticaller('0xb5b692a88bdfc81ca69dcb1d924f59f0413a602a', provider)
-  const { account } = parseArgs()
+  const { account, show } = parseArgs()
   if (!ethers.utils.isAddress(account)) {
     throw new Error(
       `"${account}" is not valid address, please specify an address using the -a or --account flags`
@@ -26,10 +26,14 @@ async function main() {
       farmCallEncoder('tokenOfOwnerByIndex', account, depositIndex)
     )
   ])
-  const [deposits, pendingComb] = await multicall([
+  const [depositsInfo, pendingComb] = await multicall([
     depositIds.map((depositId) => farmCallEncoder('depositInfo', depositId)),
     depositIds.map((depositId) => farmCallEncoder('pendingHsf', depositId))
   ])
+  const deposits = _.zip(depositIds, depositsInfo).map(([depositId, depositInfo]) => ({
+    ...depositInfo,
+    depositId
+  }))
   const pools = new Set()
   deposits.forEach((deposit) => pools.add(deposit.pool))
 
@@ -65,6 +69,15 @@ async function main() {
         poolRewards
       )})`
     )
+    if (show) {
+      const depositSharePrec = 1e2
+      const depositBreakdown = poolDeposits.map(({ depositId, rewardShare }) => {
+        depositId = depositId.toNumber()
+        const depositShare = rewardShare.mul(100 * depositSharePrec).div(userShares)
+        return `${depositId} (${depositShare.toNumber() / depositSharePrec}%)`
+      })
+      console.log(`=> ${depositBreakdown.join(', ')}`)
+    }
   })
 
   console.log(
