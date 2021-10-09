@@ -71,10 +71,11 @@ async function main() {
     )
     if (show) {
       const depositSharePrec = 1e2
-      const depositBreakdown = poolDeposits.map(({ depositId, rewardShare }) => {
+      const depositBreakdown = poolDeposits.map(({ depositId, rewardShare, unlockTime }) => {
         depositId = depositId.toNumber()
         const depositShare = rewardShare.mul(100 * depositSharePrec).div(userShares)
-        return `${depositId} (${depositShare.toNumber() / depositSharePrec}%)`
+        const dispId = unlockTime.eq(0) ? depositId : `[${depositId}]`
+        return `${dispId} (${depositShare.toNumber() / depositSharePrec}%)`
       })
       console.log(`=> ${depositBreakdown.join(', ')}`)
     }
